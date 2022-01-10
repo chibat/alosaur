@@ -1,7 +1,7 @@
-import { AppSettings, HttpContext, Middleware, MiddlewareTarget } from "../../mod.ts";
+import { HttpContext, MiddlewareTarget } from "../../mod.ts";
 import { AlosaurOpenApiBuilder } from "../mod.ts";
+import {} from "https://unpkg.com/swagger-ui-dist@4.1.3/swagger-ui-bundle.js";
 
-@Middleware(/^.*$/)
 export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
   #jsonPath = "/api.json";
   #htmlPath = "/swagger-ui.html";
@@ -9,16 +9,14 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
   #html: string | unknown;
 
   constructor(
+    alosaurOpenApiBuilder: AlosaurOpenApiBuilder<unknown>,
     options?: {
-      alosaurOpenApiBuilder?: AlosaurOpenApiBuilder<unknown>;
       jsonPath?: string;
       htmlPath?: string;
     },
   ) {
+    this.#json = JSON.stringify(alosaurOpenApiBuilder.getSpec());
     if (options) {
-      if (options.alosaurOpenApiBuilder) {
-        this.#json = JSON.stringify(options.alosaurOpenApiBuilder.getSpec());
-      }
       if (options.jsonPath) {
         this.#jsonPath = options.jsonPath;
       }
@@ -37,11 +35,6 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
   onPostRequest(context: HttpContext<unknown>) {
     switch (context.request.parserUrl.pathname) {
       case this.#jsonPath:
-        if (!this.#json) {
-          const parserUrl = context.request.parserUrl;
-          const url = parserUrl.protocol + "//" + parserUrl.host;
-          this.#initializeDefaultJson(url);
-        }
         context.response.headers.set(
           "content-type",
           "application/json; charset=utf-8",
@@ -69,19 +62,6 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
     return new Promise<void>((resolve, _reject) => {
       resolve();
     });
-  }
-
-  #initializeDefaultJson(url: string) {
-    const unusedParameter: AppSettings = {areas: []};
-    this.#json = JSON.stringify(
-      AlosaurOpenApiBuilder.create(unusedParameter)
-        .registerControllers()
-        .addTitle("API Specification")
-        .addServer({
-          url: url,
-        })
-        .getSpec(),
-    );
   }
 
   #initializeHtml(url: string) {
@@ -143,6 +123,9 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
               window.ui = ui;
             };
           </script>
+          <style>
+            .swagger-ui .topbar .download-url-wrapper { display: none } undefined
+          </style>
           </body>
         </html>
     `;

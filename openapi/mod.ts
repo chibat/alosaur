@@ -22,6 +22,8 @@ import {
 } from "./parser/src/utils.ts";
 import { JsDocObject, JsDocParse } from "./parser/src/js-doc-parser.ts";
 
+export * from "./middlewares/openapi.middleware.ts";
+
 /**
  * For testing this builder use this editor:
  * https://editor.swagger.io/
