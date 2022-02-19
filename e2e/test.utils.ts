@@ -11,7 +11,7 @@ export async function startServer(serverPath: string): Promise<Deno.Process> {
       "--importmap=imports.json",
       "--unstable",
       "--config",
-      "./src/tsconfig.lib.json",
+      "deno.json",
       serverPath,
     ],
     stdout: "piped",
@@ -32,8 +32,4 @@ export async function startServer(serverPath: string): Promise<Deno.Process> {
 export function killServer(process: Deno.Process): void {
   process.close();
   (process.stdout as any)?.close();
-}
-
-export function itLog(s: string, firstIt = false): void {
-  firstIt ? console.log("\n" + s) : console.log(s);
 }
